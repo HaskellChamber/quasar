@@ -22,10 +22,10 @@ ThisBuild / scmInfo := Some(
 )
 
 lazy val qdataVersion = Def.setting[String](
-  managedVersions.value("precog-qdata"))
+  managedVersions.value("precog-qdata2"))
 
 lazy val tectonicVersion = Def.setting[String](
-  managedVersions.value("precog-tectonic"))
+  managedVersions.value("precog-tectonic2"))
 
 lazy val fs2JobVersion = Def.setting[String](
   managedVersions.value("precog-fs2-job"))
@@ -122,7 +122,7 @@ lazy val foundation = project
       "com.slamdata"               %% "matryoshka-core"           % matryoshkaVersion,
       "com.slamdata"               %% "pathy-core"                % pathyVersion,
       "com.slamdata"               %% "pathy-argonaut"            % pathyVersion,
-      "com.precog"                 %% "qdata-time"                % qdataVersion.value,
+      "com.precog.v2"              %% "qdata-time"                % qdataVersion.value,
       "com.chuusai"                %% "shapeless"                 % shapelessVersion,
       "com.propensive"             %% "contextual"                % "1.2.1",
       "io.frees"                   %% "iotaz-core"                % iotaVersion,
@@ -180,10 +180,10 @@ lazy val ejson = project
   .dependsOn(foundation % BothScopes)
   .settings(
     libraryDependencies ++= Seq(
-      "com.precog" %% "qdata-core" % qdataVersion.value,
-      "com.precog" %% "qdata-time" % qdataVersion.value,
-      "com.precog" %% "qdata-core" % qdataVersion.value % "test->test" classifier "tests",
-      "com.precog" %% "qdata-time" % qdataVersion.value % "test->test" classifier "tests"))
+      "com.precog.v2" %% "qdata-core" % qdataVersion.value,
+      "com.precog.v2" %% "qdata-time" % qdataVersion.value,
+      "com.precog.v2" %% "qdata-core" % qdataVersion.value % "test->test" classifier "tests",
+      "com.precog.v2" %% "qdata-time" % qdataVersion.value % "test->test" classifier "tests"))
   .settings(commonSettings)
 
 /** Quasar components shared by both frontend and connector. This includes
@@ -196,9 +196,9 @@ lazy val common = project
     ejson)
   .settings(
     libraryDependencies ++= Seq(
-      "com.precog" %% "qdata-core" % qdataVersion.value,
-      "com.precog" %% "qdata-core" % qdataVersion.value % "test->test" classifier "tests",
-      "com.precog" %% "qdata-time" % qdataVersion.value % "test->test" classifier "tests"))
+      "com.precog.v2" %% "qdata-core" % qdataVersion.value,
+      "com.precog.v2" %% "qdata-core" % qdataVersion.value % "test->test" classifier "tests",
+      "com.precog.v2" %% "qdata-time" % qdataVersion.value % "test->test" classifier "tests"))
   .settings(commonSettings)
 
 /** Types and operations needed by query language implementations.
@@ -212,7 +212,7 @@ lazy val frontend = project
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Seq(
-      "com.precog"                 %% "qdata-json"    % qdataVersion.value,
+      "com.precog.v2"              %% "qdata-json"    % qdataVersion.value,
       "com.github.julien-truffaut" %% "monocle-macro" % monocleVersion,
       "org.typelevel"              %% "algebra-laws"  % algebraVersion % Test))
 
@@ -260,7 +260,7 @@ lazy val connector = project
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Seq(
-      "com.precog" %% "tectonic" % tectonicVersion.value))
+      "com.precog.v2" %% "tectonic" % tectonicVersion.value))
 
 lazy val core = project
   .settings(name := "quasar-core")
@@ -288,8 +288,8 @@ lazy val impl = project
 
     libraryDependencies ++= Seq(
       "com.precog"     %% "fs2-job"                  % fs2JobVersion.value,
-      "com.precog"     %% "qdata-tectonic"           % qdataVersion.value,
-      "com.precog"     %% "tectonic-fs2"             % tectonicVersion.value,
+      "com.precog.v2"  %% "qdata-tectonic"           % qdataVersion.value,
+      "com.precog.v2"  %% "tectonic-fs2"             % tectonicVersion.value,
       "org.http4s"     %% "http4s-client"            % http4sVersion,
       "org.http4s"     %% "jawn-fs2"                 % jawnfs2Version,
       "org.slf4s"      %% "slf4s-api"                % slf4sVersion,
@@ -308,7 +308,7 @@ lazy val impl = project
       // if it is not added here then no HttpClientProvider implementation can be found.
       // See ch11286.
       "com.azure" % "azure-core-http-netty" % "1.6.3",
-      "com.precog"    %% "tectonic-test" % tectonicVersion.value % Test,
+      "com.precog.v2" %% "tectonic-test" % tectonicVersion.value % Test,
       "org.http4s"    %% "http4s-dsl" % http4sVersion  % Test,
       "org.typelevel" %% "discipline-specs2" % disciplineVersion % Test,
       "org.typelevel" %% "kittens" % kittensVersion % Test))
