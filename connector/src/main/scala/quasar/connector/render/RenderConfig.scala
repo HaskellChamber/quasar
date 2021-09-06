@@ -39,7 +39,8 @@ object RenderConfig {
       offsetTimeFormat: DateTimeFormatter = ISO_OFFSET_TIME,
       localDateTimeFormat: DateTimeFormatter = ISO_LOCAL_DATE_TIME,
       localDateFormat: DateTimeFormatter = ISO_LOCAL_DATE,
-      localTimeFormat: DateTimeFormatter = ISO_LOCAL_TIME)
+      localTimeFormat: DateTimeFormatter = ISO_LOCAL_TIME,
+      nullCharacter: Option[String] = Some("")) // (\u0000) None means render the value as-is
       extends RenderConfig[Byte]
 
   final case class Json(
