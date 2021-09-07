@@ -30,7 +30,7 @@ object RenderConfig {
   // construct instances based on named arguments
   final case class Csv(
       includeHeader: Boolean = true,
-      nullSentinel: Option[String] = None,
+      undefinedSentinel: Option[String] = None,
       includeBom: Boolean = true,
       booleanFormat: Boolean => String = if (_) "true" else "false",
       numericScale: Option[Int] = None, // None means render the value as-is
