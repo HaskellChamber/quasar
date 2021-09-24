@@ -46,6 +46,12 @@ object InternalKey {
   val StringKey = OffsetKey.StringKey
   type DateTimeKey[F[_]] = OffsetKey.DateTimeKey[F]
   val DateTimeKey = OffsetKey.DateTimeKey
+  type LocalDateKey[F[_]] = OffsetKey.LocalDateKey[F]
+  val LocalDateKey = OffsetKey.LocalDateKey
+  type LocalDateTimeKey[F[_]] = OffsetKey.LocalDateTimeKey[F]
+  val LocalDateTimeKey = OffsetKey.LocalDateTimeKey
+  type DateKey[F[_]] = OffsetKey.DateKey[F]
+  val DateKey = OffsetKey.DateKey
 
   object Actual {
     def real(k: Real): Actual[Real] =
@@ -56,6 +62,15 @@ object InternalKey {
 
     def dateTime(k: OffsetDateTime): Actual[OffsetDateTime] =
       DateTimeKey[Id](k)
+
+    def date(k: OffsetDate): Actual[OffsetDate] =
+      DateKey[Id](k)
+
+    def localDate(k: LocalDate): Actual[LocalDate] =
+      LocalDateKey[Id](k)
+
+    def localDateTime(k: LocalDateTime): Actual[LocalDateTime] =
+      LocalDateTimeKey[Id](k)
   }
 
   object Formal {
@@ -67,6 +82,15 @@ object InternalKey {
 
     def dateTime[T](t: T): Formal[T, OffsetDateTime] =
       DateTimeKey(Const[T, OffsetDateTime](t))
+
+    def date[T](t: T): Formal[T, OffsetDate] =
+      DateKey(Const[T, OffsetDate](t))
+
+    def localDate[T](t: T): Formal[T, LocalDate] =
+      LocalDateKey(Const[T, LocalDate](t))
+
+    def localDateTime[T](t: T): Formal[T, LocalDateTime] =
+      LocalDateTimeKey(Const[T, LocalDateTime](t))
   }
 
   def fromOffset[F[_], A](inp: OffsetKey[F, A]): Option[InternalKey[F, A]] = inp match {
