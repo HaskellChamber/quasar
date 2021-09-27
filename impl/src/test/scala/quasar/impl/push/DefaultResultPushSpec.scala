@@ -312,24 +312,36 @@ object DefaultResultPushSpec extends EffectfulQSpec[IO] with ConditionMatchers {
           creates ++ Stream.emit(DataEvent.Commit(OffsetKey.Actual.string("id-100")))
 
         case OffsetKey.DateTimeKey(_) =>
-          val epoch = Instant.EPOCH.atOffset(ZoneOffset.UTC)
-          creates ++ Stream.emit(DataEvent.Commit(OffsetKey.Actual.dateTime(epoch)))
+          creates ++ Stream.eval {
+            IO(Instant.EPOCH.atOffset(ZoneOffset.UTC)) map { e =>
+              DataEvent.Commit(OffsetKey.Actual.dateTime(e))
+            }
+          }
 
         case OffsetKey.ExternalKey(ex) =>
           creates ++ Stream.emit(DataEvent.Commit(OffsetKey.Actual.external(ExternalOffsetKey.empty)))
 
         case OffsetKey.DateKey(_) =>
-          val date = LocalDate.now()
-          val offsetDate = OffsetDate(date, ZoneOffset.UTC)
-          creates ++ Stream.emit(DataEvent.Commit(OffsetKey.Actual.date(offsetDate)))
+          creates ++ Stream.eval {
+            IO(LocalDate.now()) map { date =>
+              val offsetDate = OffsetDate(date, ZoneOffset.UTC)
+              DataEvent.Commit(OffsetKey.Actual.date(offsetDate))
+            }
+          }
 
         case OffsetKey.LocalDateKey(_) =>
-          val date = LocalDate.now()
-          creates ++ Stream.emit(DataEvent.Commit(OffsetKey.Actual.localDate(date)))
+          creates ++ Stream.eval {
+            IO(LocalDate.now()) map { date =>
+              DataEvent.Commit(OffsetKey.Actual.localDate(date))
+            }
+          }
 
         case OffsetKey.LocalDateTimeKey(_) =>
-          val date = LocalDateTime.now()
-          creates ++ Stream.emit(DataEvent.Commit(OffsetKey.Actual.localDateTime(date)))
+          creates ++ Stream.eval {
+            IO(LocalDateTime.now()) map { date =>
+              DataEvent.Commit(OffsetKey.Actual.localDateTime(date))
+            }
+          }
       }
     }
 
