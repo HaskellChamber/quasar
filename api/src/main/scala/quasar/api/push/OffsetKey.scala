@@ -214,35 +214,23 @@ object OffsetKey {
     implicit val offsetDateEq: Eq[OffsetDate] = Eq.by(x => (x.date, x.offset))
 
     new Eq[Actual[A]] {
-      def eqv(a: Actual[A], b: Actual[A]) = a match {
-        case ak: RealKey[Id] => b match {
-          case bk: RealKey[Id] => ak.value === bk.value
-          case _ => false
-        }
-        case ak: StringKey[Id] => b match {
-          case bk: StringKey[Id] => ak.value === bk.value
-          case _ => false
-        }
-        case ak: DateKey[Id] => b match {
-          case bk: DateKey[Id] => ak.value === bk.value
-          case _ => false
-        }
-        case ak: DateTimeKey[Id] => b match {
-          case bk: DateTimeKey[Id] => ak.value === bk.value
-          case _ => false
-        }
-        case ak: LocalDateKey[Id] => b match {
-          case bk: LocalDateKey[Id] => ak.value === bk.value
-          case _ => false
-        }
-        case ak: LocalDateTimeKey[Id] => b match {
-          case bk: LocalDateTimeKey[Id] => ak.value === bk.value
-          case _ => false
-        }
-        case ak: ExternalKey[Id] => b match {
-          case bk: ExternalKey[Id] => ak.value === bk.value
-          case _ => false
-        }
+      def eqv(a: Actual[A], b: Actual[A]) = (a, b) match {
+        case (RealKey(a), RealKey(b)) =>
+          a === b
+        case (StringKey(a), StringKey(b)) =>
+          a === b
+        case (DateKey(a), DateKey(b)) =>
+          a === b
+        case (DateTimeKey(a), DateTimeKey(b)) =>
+          a === b
+        case (LocalDateKey(a), LocalDateKey(b)) =>
+          a === b
+        case (LocalDateTimeKey(a), LocalDateTimeKey(b)) =>
+          a === b
+        case (ExternalKey(a), ExternalKey(b)) =>
+          a === b
+        case _ =>
+          false
       }
     }
   }
