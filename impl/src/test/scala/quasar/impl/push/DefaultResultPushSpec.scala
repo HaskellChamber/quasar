@@ -27,7 +27,7 @@ import cats.implicits._
 import fs2.{Pipe, Stream, text, Pull}
 import fs2.concurrent.Queue
 
-import java.time.{Instant, ZoneOffset}
+import java.time.{Instant, ZoneOffset, LocalDate, LocalDateTime}
 
 import monocle.Prism
 
@@ -49,6 +49,8 @@ import quasar.connector.render._
 import quasar.contrib.scalaz.MonadError_
 import quasar.impl.storage
 import quasar.impl.storage.{StoreError, RefIndexedStore}
+
+import qdata.time.OffsetDate
 
 import shims.{applicativeToCats, eqToScalaz, orderToCats, orderToScalaz, showToCats, showToScalaz}
 
@@ -310,11 +312,36 @@ object DefaultResultPushSpec extends EffectfulQSpec[IO] with ConditionMatchers {
           creates ++ Stream.emit(DataEvent.Commit(OffsetKey.Actual.string("id-100")))
 
         case OffsetKey.DateTimeKey(_) =>
-          val epoch = Instant.EPOCH.atOffset(ZoneOffset.UTC)
-          creates ++ Stream.emit(DataEvent.Commit(OffsetKey.Actual.dateTime(epoch)))
+          creates ++ Stream.eval {
+            IO(Instant.EPOCH.atOffset(ZoneOffset.UTC)) map { e =>
+              DataEvent.Commit(OffsetKey.Actual.dateTime(e))
+            }
+          }
 
         case OffsetKey.ExternalKey(ex) =>
           creates ++ Stream.emit(DataEvent.Commit(OffsetKey.Actual.external(ExternalOffsetKey.empty)))
+
+        case OffsetKey.DateKey(_) =>
+          creates ++ Stream.eval {
+            IO(LocalDate.now()) map { date =>
+              val offsetDate = OffsetDate(date, ZoneOffset.UTC)
+              DataEvent.Commit(OffsetKey.Actual.date(offsetDate))
+            }
+          }
+
+        case OffsetKey.LocalDateKey(_) =>
+          creates ++ Stream.eval {
+            IO(LocalDate.now()) map { date =>
+              DataEvent.Commit(OffsetKey.Actual.localDate(date))
+            }
+          }
+
+        case OffsetKey.LocalDateTimeKey(_) =>
+          creates ++ Stream.eval {
+            IO(LocalDateTime.now()) map { date =>
+              DataEvent.Commit(OffsetKey.Actual.localDateTime(date))
+            }
+          }
       }
     }
 

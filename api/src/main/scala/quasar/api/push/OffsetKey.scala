@@ -18,12 +18,14 @@ package quasar.api.push
 
 import slamdata.Predef.{Eq => _, _}
 
-import java.time.OffsetDateTime
+import java.time.{LocalDateTime, LocalDate, OffsetDateTime, ZoneOffset}
 
 import cats.{Eq, Id, Show}
 import cats.data.Const
 import cats.evidence._
 import cats.implicits._
+
+import qdata.time.OffsetDate
 
 import spire.math.Real
 
@@ -44,6 +46,12 @@ object InternalKey {
   val StringKey = OffsetKey.StringKey
   type DateTimeKey[F[_]] = OffsetKey.DateTimeKey[F]
   val DateTimeKey = OffsetKey.DateTimeKey
+  type LocalDateKey[F[_]] = OffsetKey.LocalDateKey[F]
+  val LocalDateKey = OffsetKey.LocalDateKey
+  type LocalDateTimeKey[F[_]] = OffsetKey.LocalDateTimeKey[F]
+  val LocalDateTimeKey = OffsetKey.LocalDateTimeKey
+  type DateKey[F[_]] = OffsetKey.DateKey[F]
+  val DateKey = OffsetKey.DateKey
 
   object Actual {
     def real(k: Real): Actual[Real] =
@@ -54,6 +62,15 @@ object InternalKey {
 
     def dateTime(k: OffsetDateTime): Actual[OffsetDateTime] =
       DateTimeKey[Id](k)
+
+    def date(k: OffsetDate): Actual[OffsetDate] =
+      DateKey[Id](k)
+
+    def localDate(k: LocalDate): Actual[LocalDate] =
+      LocalDateKey[Id](k)
+
+    def localDateTime(k: LocalDateTime): Actual[LocalDateTime] =
+      LocalDateTimeKey[Id](k)
   }
 
   object Formal {
@@ -65,6 +82,15 @@ object InternalKey {
 
     def dateTime[T](t: T): Formal[T, OffsetDateTime] =
       DateTimeKey(Const[T, OffsetDateTime](t))
+
+    def date[T](t: T): Formal[T, OffsetDate] =
+      DateKey(Const[T, OffsetDate](t))
+
+    def localDate[T](t: T): Formal[T, LocalDate] =
+      LocalDateKey(Const[T, LocalDate](t))
+
+    def localDateTime[T](t: T): Formal[T, LocalDateTime] =
+      LocalDateTimeKey(Const[T, LocalDateTime](t))
   }
 
   def fromOffset[F[_], A](inp: OffsetKey[F, A]): Option[InternalKey[F, A]] = inp match {
@@ -91,6 +117,21 @@ object OffsetKey {
     val reify = Is.refl
   }
 
+  final case class LocalDateKey[F[_]](value: F[LocalDate]) extends InternalKey[F, LocalDate] {
+    type Repr = LocalDate
+    val reify = Is.refl
+  }
+
+  final case class LocalDateTimeKey[F[_]](value: F[LocalDateTime]) extends InternalKey[F, LocalDateTime] {
+    type Repr = LocalDateTime
+    val reify = Is.refl
+  }
+
+  final case class DateKey[F[_]](value: F[OffsetDate]) extends InternalKey[F, OffsetDate] {
+    type Repr = OffsetDate
+    val reify = Is.refl
+  }
+
   final case class ExternalKey[F[_]](value: F[ExternalOffsetKey]) extends OffsetKey[F, ExternalOffsetKey] {
     type Repr = ExternalOffsetKey
     val reify = Is.refl
@@ -108,6 +149,15 @@ object OffsetKey {
 
     def external(k: ExternalOffsetKey): Actual[ExternalOffsetKey] =
       ExternalKey[Id](k)
+
+    def localDateTime(k: LocalDateTime): Actual[LocalDateTime] =
+      LocalDateTimeKey[Id](k)
+
+    def date(k: OffsetDate): Actual[OffsetDate] =
+      DateKey[Id](k)
+
+    def localDate(k: LocalDate): Actual[LocalDate] =
+      LocalDateKey[Id](k)
   }
 
   object Formal {
@@ -122,6 +172,15 @@ object OffsetKey {
 
     def external[T](t: T): Formal[T, ExternalOffsetKey] =
       ExternalKey(Const[T, ExternalOffsetKey](t))
+
+    def date[T](t: T): Formal[T, OffsetDate] =
+      DateKey(Const[T, OffsetDate](t))
+
+    def localDate[T](t: T): Formal[T, LocalDate] =
+      LocalDateKey(Const[T, LocalDate](t))
+
+    def localDateTime[T](t: T): Formal[T, LocalDateTime] =
+      LocalDateTimeKey(Const[T, LocalDateTime](t))
   }
 
   implicit def offsetKeyActualShow[A]: Show[Actual[A]] =
@@ -129,6 +188,9 @@ object OffsetKey {
       case RealKey(k) => s"RealKey($k)"
       case StringKey(k) => s"StringKey($k)"
       case DateTimeKey(k) => s"DateTimeKey($k)"
+      case DateKey(k) => s"DateKey($k)"
+      case LocalDateKey(k) => s"LocalDateKey($k)"
+      case LocalDateTimeKey(k) => s"LocalDateTimeKey($k)"
       case ExternalKey(k) => s"ExternalKey(${k.show})"
     }
 
@@ -137,18 +199,39 @@ object OffsetKey {
       case k: RealKey[Const[T, ?]] => s"RealKey(${k.value.getConst.show})"
       case k: StringKey[Const[T, ?]] => s"StringKey(${k.value.getConst.show})"
       case k: DateTimeKey[Const[T, ?]] => s"DateTimeKey(${k.value.getConst.show})"
+      case k: LocalDateKey[Const[T, ?]] => s"LocalDateKey(${k.value.getConst.show})"
+      case k: DateKey[Const[T, ?]] => s"DateKey(${k.value.getConst.show})"
+      case k: LocalDateTimeKey[Const[T, ?]] => s"LocalDateTimeKey(${k.value.getConst.show})"
       case k: ExternalKey[Const[T, ?]] => s"ExternalKey(${k.value.getConst.show})"
     }
 
   implicit def offsetKeyActualEq[A]: Eq[Actual[A]] = {
     implicit val realEq: Eq[Real] = Eq.fromUniversalEquals
     implicit val offsetDateTimeEq: Eq[OffsetDateTime] = Eq.fromUniversalEquals
+    implicit val localDateEq: Eq[LocalDate] = Eq.fromUniversalEquals
+    implicit val localDateTimeEq: Eq[LocalDateTime] = Eq.fromUniversalEquals
+    implicit val zoneOffsetEq: Eq[ZoneOffset] = Eq.fromUniversalEquals
+    implicit val offsetDateEq: Eq[OffsetDate] = Eq.by(x => (x.date, x.offset))
 
-    Eq.by[Actual[A], (Option[Real], Option[String], Option[OffsetDateTime], Option[ExternalOffsetKey])] {
-      case k: RealKey[Id] => (Some(k.value), None, None, None)
-      case k: StringKey[Id] => (None, Some(k.value), None, None)
-      case k: DateTimeKey[Id] => (None, None, Some(k.value), None)
-      case k: ExternalKey[Id] => (None, None, None, Some(k.value))
+    new Eq[Actual[A]] {
+      def eqv(a: Actual[A], b: Actual[A]) = (a, b) match {
+        case (RealKey(a), RealKey(b)) =>
+          a === b
+        case (StringKey(a), StringKey(b)) =>
+          a === b
+        case (DateKey(a), DateKey(b)) =>
+          a === b
+        case (DateTimeKey(a), DateTimeKey(b)) =>
+          a === b
+        case (LocalDateKey(a), LocalDateKey(b)) =>
+          a === b
+        case (LocalDateTimeKey(a), LocalDateTimeKey(b)) =>
+          a === b
+        case (ExternalKey(a), ExternalKey(b)) =>
+          a === b
+        case _ =>
+          false
+      }
     }
   }
 
@@ -158,5 +241,8 @@ object OffsetKey {
       case k: StringKey[Const[T, ?]] => (1, k.value.getConst)
       case k: DateTimeKey[Const[T, ?]] => (2, k.value.getConst)
       case k: ExternalKey[Const[T, ?]] => (3, k.value.getConst)
+      case k: DateKey[Const[T, ?]] => (4, k.value.getConst)
+      case k: LocalDateKey[Const[T, ?]] => (5, k.value.getConst)
+      case k: LocalDateTimeKey[Const[T, ?]] => (6, k.value.getConst)
     }
 }
