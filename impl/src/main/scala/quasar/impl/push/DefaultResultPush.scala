@@ -197,6 +197,16 @@ private[impl] final class DefaultResultPush[
           case (dateTimeKey @ OffsetKey.DateTimeKey(_), OffsetKey.DateTimeKey(_)) =>
             runPush(destinationId, inc, None, createdAt, Some(dateTimeKey))
 
+          case (localDateTimeKey @ OffsetKey.LocalDateTimeKey(_), OffsetKey.LocalDateTimeKey(_)) =>
+            runPush(destinationId, inc, None, createdAt, Some(localDateTimeKey))
+
+          case (localDateKey @ OffsetKey.LocalDateKey(_), OffsetKey.LocalDateKey(_)) =>
+            runPush(destinationId, inc, None, createdAt, Some(localDateKey))
+
+          case (dateKey @ OffsetKey.DateKey(_), OffsetKey.DateKey(_)) =>
+            runPush(destinationId, inc, None, createdAt, Some(dateKey))
+
+
           case _ =>
             val ex = new IllegalStateException(
               s"Invalid offset, expected ${expectedKey.show}, found ${actualKey.show}")
